@@ -14,6 +14,8 @@ import { paymentRoutes } from "./app/module/payment/payment.route";
 import { prescriptionRoutes } from "./app/module/prescription/prescription.route";
 import { analyticsRoutes } from "./app/module/analytics/analytics.route";
 
+
+
 const app: Application = express();
 
 app.use(
@@ -26,6 +28,8 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+
 
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/user", UserRoutes);

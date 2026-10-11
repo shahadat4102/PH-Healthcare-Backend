@@ -306,6 +306,7 @@ const refreshToken = async (token: string) => {
 // ─── Google Login ────────────────────────────────────────────────────────────
 
 const googleLogin = async (payload: IGoogleLoginPayload) => {
+
 	let googleIdTokenPayload: TokenPayload | null | undefined = null;
 
 	try {
@@ -314,6 +315,7 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 			audience: config.google_client_id,
 		});
 		googleIdTokenPayload = ticket.getPayload();
+		
 	} catch (error) {
 		console.log("Google ID Token Verification Failed", error);
 		throw new Error("Invalid or expired Google ID token");

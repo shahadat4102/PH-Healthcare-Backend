@@ -377,8 +377,8 @@ const getAvailableDoctorByTodaySSchedul = async (query: IQuery) => {
     const sortOrder = query.sortOrder ? query.sortOrder : "desc";
 
     const now = new Date();
-    const todayStart = startOfDay(now);
-    const todayEnd = addDays(todayStart, 1);
+    const startofToday = startOfDay(now);
+    const startOfTomorrow = addDays(startofToday, 1);
 
     const andConditions: DoctorWhereInput[] = [
         { isDeleted: false },
@@ -390,8 +390,9 @@ const getAvailableDoctorByTodaySSchedul = async (query: IQuery) => {
                     status: ScheduleStatus.PUBLISHED,
                     availableSlots: { gt: 0 },
                     startDateTime: {
-                        gte: now,       // আজকের এখন থেকে
-                        lt: todayEnd,   // আজকের শেষ পর্যন্ত
+                        gte: startofToday,       // আজকের এখন থেকে
+                        lt: startOfTomorrow,   // আজকের শেষ পর্যন্ত
+                        gt: now,
                     },
                 }
             }
@@ -435,7 +436,7 @@ const getAvailableDoctorByTodaySSchedul = async (query: IQuery) => {
                     availableSlots: { gt: 0 },
                     startDateTime: {
                         gte: now,
-                        lt: todayEnd,
+                        lt: startOfTomorrow,
                     },
                 },
                 orderBy: { startDateTime: "asc" },

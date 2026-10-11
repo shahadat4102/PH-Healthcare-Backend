@@ -25,6 +25,7 @@ router.post("/register",
 router.post("/login", 
 	validateReqest(uservalidation.loginzodSchema),
 	AuthController.loginUser);
+	
 
 router.get(
 	"/me",
