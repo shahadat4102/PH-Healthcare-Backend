@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import httpStatus from "http-status";
-import { catchAsync } from "../../utils/catchAsync";
-import { sendResponse } from "../../utils/sendResponse";
-import type { IRequestUser } from "./auth.interface";
-import { AuthService } from "./auth.service";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import type { IRequestUser } from "./auth.interface.js";
+import { AuthService } from "./auth.service.js";
 
-const registerPatient = catchAsync(async (req: Request, res: Response) => {
+const registerUser = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	await AuthService.registerPatient(payload);
+	await AuthService.registerUser(payload);
 
 	sendResponse(res, {
 		statusCode: httpStatus.CREATED,
@@ -17,10 +17,10 @@ const registerPatient = catchAsync(async (req: Request, res: Response) => {
 	});
 });
 
-const verifiPatientEmail = catchAsync(async (req: Request, res: Response) => {
+const verifyUserEmail = catchAsync(async (req: Request, res: Response) => {
 	const payload = req.body;
-	const result = await AuthService.verifyPatientEmail(payload);
-	const { accessToken, refreshToken, user, patient } = result;
+	const result = await AuthService.verifyUserEmail(payload);
+	const { accessToken, refreshToken, user } = result;
 
 	res.cookie("accessToken", accessToken, {
 		httpOnly: true,
@@ -39,7 +39,7 @@ const verifiPatientEmail = catchAsync(async (req: Request, res: Response) => {
 		statusCode: httpStatus.OK,
 		success: true,
 		message: "Email verified successfully",
-		data: { accessToken, refreshToken, user, patient },
+		data: { accessToken, refreshToken, user },
 	});
 });
 
@@ -52,13 +52,13 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 		httpOnly: true,
 		secure: false,
 		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24, // 24 hours
+		maxAge: 1000 * 60 * 60 * 24,
 	});
 	res.cookie("refreshToken", refreshToken, {
 		httpOnly: true,
 		secure: false,
 		sameSite: "none",
-		maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+		maxAge: 1000 * 60 * 60 * 24 * 7,
 	});
 
 	sendResponse(res, {
@@ -166,8 +166,8 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthController = {
-	registerPatient,
-	verifiPatientEmail,
+	registerUser,
+	verifyUserEmail,
 	loginUser,
 	getMe,
 	refreshToken,

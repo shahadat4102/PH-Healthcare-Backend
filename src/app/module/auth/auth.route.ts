@@ -1,35 +1,31 @@
 
-import {  Router } from "express";
-import { Role } from "../../../generated/prisma/enums";
-import { auth } from "../../middleware/checkAuth";
-import { AuthController } from "./auth.controller";
-
-import { validateReqest } from "../../middleware/validateReqest";
-import { uservalidation } from "./auth.validation";
+import { Router } from "express";
+import { Role } from "../../../generated/prisma/enums.js";
+import { auth } from "../../middleware/checkAuth.js";
+import { AuthController } from "./auth.controller.js";
+import { validateReqest } from "../../middleware/validateReqest.js";
+import { uservalidation } from "./auth.validation.js";
 
 const router = Router();
 
-
 router.post("/register",
-	validateReqest(uservalidation.patientRegisterZodSchema),
-	
-	 AuthController.registerPatient);
+	validateReqest(uservalidation.userRegisterZodSchema),
+	AuthController.registerUser,
+);
 
+router.post("/verify-email",
+	validateReqest(uservalidation.userEmailVerifyZodSchema),
+	AuthController.verifyUserEmail,
+);
 
- router.post("/verify-email",
-	validateReqest(uservalidation.patientEmailVerifyZodSchema),
-	
-	 AuthController.verifiPatientEmail);
-
-
-router.post("/login", 
+router.post("/login",
 	validateReqest(uservalidation.loginzodSchema),
-	AuthController.loginUser);
-	
+	AuthController.loginUser,
+);
 
 router.get(
 	"/me",
-	auth(Role.ADMIN, Role.DOCTOR, Role.PATIENT, Role.SUPER_ADMIN),
+	auth(Role.ADMIN, Role.MANAGER, Role.MEMBER),
 	AuthController.getMe,
 );
 
@@ -39,11 +35,12 @@ router.post("/google", AuthController.googleLogin);
 
 router.post("/forgot-password",
 	validateReqest(uservalidation.ForgotPasswordZodSchema),
-	 AuthController.forgotPassword);
+	AuthController.forgotPassword,
+);
 
-router.post("/reset-password", 
+router.post("/reset-password",
 	validateReqest(uservalidation.ResetPasswordZodSchema),
-	AuthController.resetPassword);
-
+	AuthController.resetPassword,
+);
 
 export const AuthRoutes = router;

@@ -1,65 +1,65 @@
-
-import { Request, Response } from "express";
-import { catchAsync } from "../../utils/catchAsync";
-import { paymentService } from "./payment.service";
-import { sendResponse } from "../../utils/sendResponse";
+import type { Request, Response } from "express";
 import httpStatus from "http-status";
+import { catchAsync } from "../../utils/catchAsync.js";
+import { sendResponse } from "../../utils/sendResponse.js";
+import { PaymentService } from "./payment.service.js";
 
+const initiatePayment = catchAsync(async (req: Request, res: Response) => {
+	const userId = req.user!.userId;
+	const { organizationId } = req.body;
 
+	if (!organizationId) {
+		throw new Error("organizationId is required");
+	}
 
-const getMyPayments = catchAsync (async(req: Request, res: Response) => {
+	const result = await PaymentService.initiatePayment(organizationId, userId);
 
-    const user = req.user!;
-
-    const {data , meta } = await paymentService.getMyPayments(req.query, user);
-
-     sendResponse(res, {
+	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
-		message: "Payment Retrievd  successfully",
-		 data,
-		 meta
+		message: "Payment initiated successfully",
+		data: result,
 	});
-	
- })
+});
 
+const handleCallback = catchAsync(async (req: Request, res: Response) => {
+	const { paymentID, status, trxID } = req.query as Record<string, string>;
 
- 
-const getAllPayments = catchAsync (async(req: Request, res: Response) => {
+	const result = await PaymentService.handleCallback(paymentID, status, trxID);
 
+	// Redirect to frontend
+	res.redirect(result.redirectUrl);
+});
 
-    const {data , meta } = await paymentService.getAllPayments(req.query);
+const getMyPayments = catchAsync(async (req: Request, res: Response) => {
+	const userId = req.user!.userId;
+	const result = await PaymentService.getMyPayments(userId);
 
-     sendResponse(res, {
+	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
-		message: "Payment Retrievd  successfully",
-		 data,
-		 meta
+		message: "Payments fetched successfully",
+		data: result,
 	});
-	
- })
+});
 
- 
-const getSinglePayments = catchAsync (async(req: Request, res: Response) => {
-      
-    const paymentId = await req.params.paymentId as string
-    const user = req.user!;
+const getSinglePayment = catchAsync(async (req: Request, res: Response) => {
+	const userId = req.user!.userId;
+	const userRole = req.user!.role;
+	const id = req.params.id as string;
+	const result = await PaymentService.getSinglePayment(id, userId, userRole);
 
-    const result = await paymentService.getSinglePayments(paymentId, user);
-
-     sendResponse(res, {
+	sendResponse(res, {
 		statusCode: httpStatus.OK,
 		success: true,
-		message: "Payment Retrievd  successfully",
-		 data: result
+		message: "Payment fetched successfully",
+		data: result,
 	});
-	
- })
+});
 
-
- export const paymentController = {
-    getMyPayments,
-    getAllPayments,
-    getSinglePayments
- }
+export const PaymentController = {
+	initiatePayment,
+	handleCallback,
+	getMyPayments,
+	getSinglePayment,
+};

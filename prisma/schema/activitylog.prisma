@@ -1,0 +1,25 @@
+model ActivityLog {
+  id         String         @id @default(uuid())
+  action     ActivityAction
+  entityType String // "PROJECT", "TASK", "COMMENT", "PAYMENT"
+  entityId   String
+  details    Json?
+  createdAt  DateTime       @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entityType])
+  @@map("activity_logs")
+}

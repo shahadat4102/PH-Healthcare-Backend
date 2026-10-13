@@ -1,23 +1,31 @@
 model User {
   id                 String       @id @default(uuid())
   name               String
-  email              String
+  email              String       @unique
   password           String?
   googleId           String?      @unique
   authProvider       AuthProvider @default(CREDENTIAL)
   emailVerified      Boolean      @default(false)
-  role               Role         @default(PATIENT)
+  role               Role         @default(MEMBER)
   status             UserStatus   @default(ACTIVE)
   needPasswordChange Boolean      @default(false)
   imageUrl           String       @default("")
-  imagepublicId      String       @default("")
+  imagePublicId      String       @default("")
   isDeleted          Boolean      @default(false)
   deletedAt          DateTime?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
-  patient            Patient?
-  doctor             Doctor?
 
-  @@unique([email])
+  // Relations
+  ownedOrganizations Organization[]
+  memberships        OrganizationMember[]
+  assignedTasks      Task[]               @relation("TaskAssignee")
+  createdTasks       Task[]               @relation("TaskCreator")
+  comments           Comment[]
+  activityLogs       ActivityLog[]
+  payments           Payment[]
+
+  @@index([email])
+  @@index([isDeleted])
   @@map("users")
 }

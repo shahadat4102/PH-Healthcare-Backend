@@ -1,133 +1,84 @@
-import { DoctorVerificationStatus, Role } from "../../generated/prisma/enums";
-import config from "../config";
-import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
+import { Role, UserStatus, AuthProvider } from "../../generated/prisma/enums.js";
+import config from "../config/index.js";
+import { prisma } from "../lib/prisma.js";
 
-export const seedsuperAdmin = async () => {
+export const seedSuperAdmin = async () => {
 	try {
-		const isSuperAdminExist = await prisma.user.findFirst({
-			where: { role: Role.SUPER_ADMIN },
-		});
-
-		if (isSuperAdminExist) {
+		const existing = await prisma.user.findUnique({ where: { email: config.super_admin_email } });
+		if (existing) {
 			console.log("Super Admin already exists");
 			return;
 		}
 
-		const name = config.super_admin_name;
-		const email = config.super_admin_email;
-		const password = config.super_admin_password;
-
-		if (!name || !email || !password) {
-			throw new Error("Super Admin name, email, or password missing in env file");
-		}
-
-		const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
-
-		const superAdmin = await prisma.user.create({
+		const hashed = await bcrypt.hash(config.super_admin_password, Number(config.bcrypt_salt_rounds));
+		await prisma.user.create({
 			data: {
-				name,
-				email,
-				password: hashedPassword,
-				role: Role.SUPER_ADMIN,
-				needPasswordChange: false,
+				name: config.super_admin_name || "Super Admin",
+				email: config.super_admin_email,
+				password: hashed,
+				role: Role.ADMIN,
+				status: UserStatus.ACTIVE,
 				emailVerified: true,
+				authProvider: AuthProvider.CREDENTIAL,
 			},
 		});
-
-		console.log("Super Admin created:", superAdmin.email);
+		console.log("Super admin seeded.");
 	} catch (error) {
 		console.log("Error seeding Super Admin:", error);
-		await prisma.user.deleteMany({ where: { email: config.super_admin_email } });
 	}
 };
 
-export const seedTesterAdmin = async () => {
+export const seedTesterManager = async () => {
 	try {
-		const isTesterAdminExist = await prisma.user.findUnique({
-			where: { email: config.tester_admin_email },
-		});
-
-		if (isTesterAdminExist) {
-			console.log("Tester Admin already exists");
-			return;
-		}
-
-		const name = config.tester_admin_name;
 		const email = config.tester_admin_email;
-		const password = config.tester_admin_password;
-
-		if (!name || !email || !password) {
-			throw new Error("Tester Admin name, email, or password missing in env file");
-		}
-
-		const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
-
-		const testerAdmin = await prisma.user.create({
-			data: {
-				name,
-				email,
-				password: hashedPassword,
-				role: Role.ADMIN,
-				needPasswordChange: false,
-				emailVerified: true,
-			},
-		});
-
-		console.log("Tester Admin created:", testerAdmin.email);
-	} catch (error) {
-		console.log("Error seeding Tester Admin:", error);
-		await prisma.user.deleteMany({ where: { email: config.tester_admin_email } });
-	}
-};
-
-export const seedTesterDoctor = async () => {
-	try {
-		const isTesterDoctorExist = await prisma.user.findUnique({
-			where: { email: config.tester_doctor_email },
-		});
-
-		if (isTesterDoctorExist) {
-			console.log("Tester Doctor already exists");
+		const existing = await prisma.user.findUnique({ where: { email } });
+		if (existing) {
+			console.log("Tester Manager already exists");
 			return;
 		}
 
-		const name = config.tester_doctor_name;
-		const email = config.tester_doctor_email;
-		const password = config.tester_doctor_password;
-
-		if (!name || !email || !password) {
-			throw new Error("Tester Doctor name, email, or password missing in env file");
-		}
-
-		const hashedPassword = await bcrypt.hash(password, Number(config.bcrypt_salt_rounds));
-
-		const testerDoctor = await prisma.user.create({
+		const hashed = await bcrypt.hash(config.tester_admin_password, Number(config.bcrypt_salt_rounds));
+		await prisma.user.create({
 			data: {
-				name,
+				name: config.tester_admin_name || "Tester Manager",
 				email,
-				password: hashedPassword,
-				role: Role.DOCTOR,
-				needPasswordChange: false,
+				password: hashed,
+				role: Role.MANAGER,
+				status: UserStatus.ACTIVE,
 				emailVerified: true,
-				doctor :{
-					create : {
-						email,
-						name,
-						contactNumber: "01700000000",
-						experienceYears : 5,
-						licenseNumber : "BMDC000",
-						qualifications : "MBBS",
-						specialization : "Neurology",
-						verificationStatus: DoctorVerificationStatus.APPROVED,
-					}
-				}
+				authProvider: AuthProvider.CREDENTIAL,
 			},
 		});
-
-		console.log("Tester Doctor created:", testerDoctor.email);
+		console.log("Tester manager seeded.");
 	} catch (error) {
-		console.log("Error seeding Tester Doctor:", error);
-		await prisma.user.deleteMany({ where: { email: config.tester_doctor_email } });
+		console.log("Error seeding Tester Manager:", error);
+	}
+};
+
+export const seedTesterMember = async () => {
+	try {
+		const email = config.tester_member_email;
+		const existing = await prisma.user.findUnique({ where: { email } });
+		if (existing) {
+			console.log("Tester Member already exists");
+			return;
+		}
+
+		const hashed = await bcrypt.hash(config.tester_member_password, Number(config.bcrypt_salt_rounds));
+		await prisma.user.create({
+			data: {
+				name: config.tester_member_name || "Tester Member",
+				email,
+				password: hashed,
+				role: Role.MEMBER,
+				status: UserStatus.ACTIVE,
+				emailVerified: true,
+				authProvider: AuthProvider.CREDENTIAL,
+			},
+		});
+		console.log("Tester member seeded.");
+	} catch (error) {
+		console.log("Error seeding Tester Member:", error);
 	}
 };
